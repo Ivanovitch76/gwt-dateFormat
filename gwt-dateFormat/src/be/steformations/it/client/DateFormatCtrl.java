@@ -4,11 +4,14 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.user.client.Window;
 
 import be.steformations.it.client.http.beans.DateParams;
 import be.steformations.it.client.http.beans.DateResult;
+import be.steformations.it.client.http.json.DateFormatJsonDateResultCallback;
+import be.steformations.it.client.http.json.DateParamObjectMapper;
 import be.steformations.it.client.http.rpc.DateFormatRpcDateResultCallback;
 import be.steformations.it.client.http.rpc.DateFormatRpcService;
 import be.steformations.it.client.http.rpc.DateFormatRpcServiceAsync;
@@ -39,7 +42,8 @@ public class DateFormatCtrl
 		GWT.log(params.toString());
 		
 		//this.formatDateRpc(params);
-		this.formatDateToObjectRpc(params);
+		//this.formatDateToObjectRpc(params);
+		this.formatDateToObjectJson(params);
 	}
 	
 	public void setFormatedDate(String s){
@@ -56,6 +60,25 @@ public class DateFormatCtrl
 		GWT.log("DateFormatCtrl.setAvailableLocales()");
 		this.ui.setLocales(locales);
 		
+	}
+	
+	private void formatDateToObjectJson(DateParams params){
+		GWT.log("DateFormatCtrl.formatDateToObjectJson()");
+		DateParamObjectMapper mapper = GWT.create(DateParamObjectMapper.class);
+		String json = mapper.write(params);
+		GWT.log(json);
+		
+		RequestBuilder builder = new RequestBuilder(RequestBuilder.POST,
+				"http://127.0.0.1:8888/json/service");
+		RequestCallback callback = new DateFormatJsonDateResultCallback(this);
+		builder.setCallback(callback);
+		builder.setRequestData(json);
+		
+		try{
+			builder.send();
+		}catch(Exception e){
+			Window.alert(e.getMessage());
+		}
 	}
 	
 	private void formatDateToObjectRpc (DateParams params){
